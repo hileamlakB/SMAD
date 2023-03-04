@@ -1,30 +1,52 @@
 # SMAD
 
-SMAD is a `sm`all,`a`synchronous `d`istributed system that is meant to simulate logical clocks in large distirbuted system. 
-The model runs on a single machine and simulates multiple machines running at different speeds, each with its own logical clock. 
-The model allows messages to be passed between the virtual machines using a network queue and profiles different paramters like 
+SMAD is a `sm`all,`a`synchronous `d`istributed system that is meant to simulate logical clocks in large distirbuted system.
+The model runs on a single machine and simulates multiple machines running at different speeds, each with its own logical clock.
+The model allows messages to be passed between the virtual machines using a network queue and profiles different paramters like
 `Message queue built ups`, `response times`, `clock gaps` and so on.
 
-## Installation
-Clone the repository to your local machine using the following command:
+## Installation & Usage
 
-git clone https://github.com/[username]/[repository-name].git
+To install this program, and run it in your computer you will need a python interpreter. This code was tested with version 3.9, but other versions between 3.8.
 
-# Usage
-To use the model, navigate to the project directory and run the main.py file using the following command:
+First download this repositry with
 
+`git clone https://github.com/hileamlakB/SMAD`
 
-python main.py
+You should then install the reqruiments. To do so, we suggest you create a virtual environment, but we will leave the decision to you. Once you have your envrionment setup you can run
 
-Once the model is initialized, each virtual machine will work according to the following specification:
+`cd SMAD`
 
-On each clock cycle, if there is a message in the message queue for the machine, the virtual machine will take one message off the queue, update the local logical clock, and write in the log that it received a message, the global time (gotten from the system), the length of the message queue, and the logical clock time.
-If there is no message in the queue, the virtual machine will generate a random number in the range of 1-10 and perform the following actions based on the value:
-If the value is 1, send a message that is the local logical clock time to one of the other machines, update its own logical clock, and update the log with the send, the system time, and the logical clock time.
-If the value is 2, send a message that is the local logical clock time to the other virtual machine, update its own logical clock, and update the log with the send, the system time, and the logical clock time.
-If the value is 3, send a message that is the logical clock time to both of the other virtual machines, update its own logical clock, and update the log with the send, the system time, and the logical clock time.
-If the value is other than 1-3, treat the cycle as an internal event, update the local logical clock, and log the internal event, the system time, and the logical clock value.
-The lab notebook should be used to record all design decisions, observations, and reflections about the model and the results of running the model. The model should be run at least 5 times for at least one minute each time, and the logs should be examined to discuss the size of the jumps in the values for the logical clocks, drift in the values of the local logical clocks in the different machines, and the impact of different timings on such things as gaps in the logical clock values and length of the message queue.
+`python -m pip install -r requirements.txt`
 
-License
+Now, you can run the test to make sure everything is working properly. If you are on a \*unix based system, you can run
+
+`./run_test.sh`
+
+To start a simulation, you can
+
+`python src/simulate.py`
+
+which will generate a log file containing events and internal clocks for each of the processes you created. You can interrupt the simulation with a `SIGINT`. To visualize this process you can run
+
+`python experiment\ results/visualize_results.py clock_rates.log [process_name.log] -o experiment\ results/standard_1.png`
+
+Here make sure to include all the process logs, but no more as error handling isn't built it, this should give you a graph like the following,
+
+![results image](./experiment results/standard_1.png)
+
+## Futher experimentation
+
+To futher explore this model, you can tweak up a couple of things.
+
+1. The clock rate of each process
+   ![clock rate](./assets/clock_rate.png)
+2. The number of internal operations each process does compared to communication
+   To change this you can access the following part of the code,
+   ![code for chaning number of operations](./assets/tasks.png)
+3. The number of processes
+   ![number of process](./assets/n_procs.png)
+
+## License
+
 This project is licensed under the MIT License. See the LICENSE file for more information.

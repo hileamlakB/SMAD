@@ -47,8 +47,19 @@ This engineering notbook is developed along side the development of this project
 
 To make testing easier, for isntance to test the logging function, I found it important to isolate the logger from the actual class, and thus I have decided to create a special class called FileLogger. This is called `dependency injection`. It is something cool I learned.
 
-This dependancy class will have the following methods, logs, close and read
+This dependancy class will have the following methods, logs, close and read.
+
+## Socket implementation
+
+When implementing the socket connection between the process I found two options
+
+1. Each process maintians multiple client sockets for each of the other processes so that it doesn't have to deal with the overhead of deleting and creating a new socket each time it wants to send a message. The down side is in a scalable system if there are multiple processes this will require maintaining multiple sockets, which might not be possible as there are limits to the number of open sockets an os can support. ulimt -n gives the maximum number of file discriptors in linux which will be required by sockets.
+2. ible as there are limits tEach time process wants to send a message, it just creats a socket and delets it as soon as it is done. The upside, scalable, interms of number of sockets. And easy mentenance. The downside for a small simulatino like ours the overhead of destorying and creating clients everytime might be noticable.
 
 ## `:lightbulb:`Cool ideas
 
 - To have actuall parallelism, write the processes models in python and implement the orcester program in c using the pthread liberary
+
+## Experiments
+
+After implementing the the small scallable distirbuted system, here are some of the tests I run.
