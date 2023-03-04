@@ -22,7 +22,7 @@ class FileLogger:
         self.filename = filename
 
         # two streams are used to read and write to the file
-        self.file = open(filename, 'a+')
+        self.file = open(filename, 'a')
         self.read_stream = None
 
     def log(self, message: str) -> None:
@@ -30,7 +30,8 @@ class FileLogger:
 
     def close(self) -> None:
         self.file.close()
-        self.read_stream.close()
+        if self.read_stream is not None:
+            self.read_stream.close()
 
     def read(self) -> str:
         if self.read_stream is None:
@@ -43,7 +44,7 @@ class SMADProc:
     def __init__(self,
                  name: str = None,
                  location: str = "localhost",
-                 port: int = 2625,
+                 port: int = 26262,
                  clock_rate: float = 0,
                  logger: FileLogger = None
                  ) -> None:
@@ -60,14 +61,15 @@ class SMADProc:
         """
         self.process_name = name
         self.address: Tuple[str, int] = (location, port)
-        self.sock: socket.socket = None
+        self.serv_sock: socket.socket = None
+        self.client_sock: socket.socket = None
         self.clock_rate = clock_rate  # randomly generate it
 
         self.other_procs: List[Tuple[str, int]] = []
         self.logger: FileLogger = None
         self.logger_created = False
 
-        # setup the process
+        # setup the processf
         self.init_socket()
         self.init_log()
         self.init_clock()
@@ -76,25 +78,20 @@ class SMADProc:
         """
         A thread to receive messages while the main thread is busy
         """
-        while self._stop_thread.is_set():
-            try:
-                conn, addr = self.sock.accept()
-                data = conn.recv(1024)
-                json_msg = json.loads(data)
-                print(addr)
-                self.msg_queue.append((addr, json_msg))
-            except Exception as err:
-                print(err)
-                break
+        while not self._stop_thread.is_set():
+            conn, addr = self.serv_sock.accept()
+            data = conn.recv(1024)
+            json_msg = json.loads(data)
+            self._msg_queue.put((addr, json_msg))
 
     def init_socket(self) -> None:
         """
         creates a socket for connection with other process
         """
-        self.sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-        self.sock.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
-        self.sock.bind(self.address)
-        self.sock.listen(5)
+        self.serv_sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+        self.serv_sock.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
+        self.serv_sock.bind(self.address)
+        self.serv_sock.listen(5)
 
         # setup receiver thread
         self._stop_thread = threading.Event()
@@ -119,7 +116,7 @@ class SMADProc:
         self.sleep_time = 1 / self.clock_rate
         self.internal_clock = 0
 
-    def send_msg(self, msg: str, dest: str) -> None:
+    def send_msg(self, dest: Tuple[str, int], msg: str) -> None:
         """
         sends a json file containing the msg along with the internal clock
         """
@@ -128,11 +125,17 @@ class SMADProc:
             'clock': self.internal_clock
         })
 
-        # connect to desitnation and send the message
-        self.sock.connect(dest)
-        self.sock.send(msg.encode())
+        # print("trying to connect:\n", dest)
 
- 
+        # connect to desitnation and send the message
+
+        self.client_sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+        self.client_sock.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
+
+        self.client_sock.connect(dest)
+        self.client_sock.send(msg.encode())
+        self.client_sock.close()
+
     def log(self, msg: str) -> None:
         """
         logs the message using the logger
@@ -177,11 +180,11 @@ class SMADProc:
             # Decide what to do if there is no message in the queue
             task = random.randint(1, 10)
             msg = ""
-            if task == Tasks.SEND_MACHINE_ONE:
+            if task == Tasks.SEND_MACHINE_ONE.value:
                 self.send_msg(self.other_procs[0],
                               f"{self.process_name}:Holla")
                 msg = "SEND TO MACHINE ONE"
-            elif task == Tasks.SEND_MACHINE_TWO:
+            elif task == Tasks.SEND_MACHINE_TWO.value:
                 self.send_msg(self.other_procs[1],
                               f"{self.process_name}:Holla")
                 msg = "SEND TO MACHINE TWO"
@@ -193,7 +196,8 @@ class SMADProc:
                 # sleep for point one second to simuulate internal event
                 time.sleep(.1)
                 msg = "INTERNAL EVENT"
-
+            
+            print(task, msg)
             self.internal_clock += 1
             self.log(self.log_formater(self.address, msg))
             time.sleep(self.sleep_time)
@@ -206,9 +210,13 @@ class SMADProc:
             closing log files
             closing threads
         """
-        self.socket.close()
-        self._stop_thread.set()
-        self._recv_thread.join()
+        # self.serv_sock.shutdown(socket.SHUT_RDWR)
+        # self.client_sock.shutdown(socket.SHUT_RDWR)
+
+        # self.serv_sock.close()
+        # self.client_sock.close()
+        # self._stop_thread.set()
+        # self._recv_thread.join()
 
         if self.logger_created:
             self.logger.close()
