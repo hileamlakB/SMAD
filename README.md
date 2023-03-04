@@ -35,6 +35,12 @@ Here make sure to include all the process logs, but no more as error handling is
 
 ![results image](./experiment results/standard_1.png)
 
+After each test, make sure you run 
+
+`./clean.sh`
+
+before you run further experiments other wise the data from different tests will overlap.
+
 ## Futher experimentation
 
 To futher explore this model, you can tweak up a couple of things.
@@ -46,6 +52,8 @@ To futher explore this model, you can tweak up a couple of things.
    ![code for chaning number of operations](./assets/tasks.png)
 3. The number of processes
    ![number of process](./assets/n_procs.png)
+
+For more tests and results, you can look in the engineering notbook inside docs
 
 ## License
 
