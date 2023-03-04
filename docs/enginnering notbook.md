@@ -42,3 +42,13 @@ This engineering notbook is developed along side the development of this project
 4. Read the paper on wruting unit tests
 5. Write strucute and unit tests
 6. Write unit tests
+
+## Coding
+
+To make testing easier, for isntance to test the logging function, I found it important to isolate the logger from the actual class, and thus I have decided to create a special class called FileLogger. This is called `dependency injection`. It is something cool I learned.
+
+This dependancy class will have the following methods, logs, close and read
+
+## `:lightbulb:`Cool ideas
+
+- To have actuall parallelism, write the processes models in python and implement the orcester program in c using the pthread liberary
