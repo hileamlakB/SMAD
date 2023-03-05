@@ -216,6 +216,7 @@ class SMADProc:
         """
         self.serv_sock.shutdown(socket.SHUT_RDWR)
         self.serv_sock.close()
+        self.stop_main.set()
 
         self._stop_thread.set()
         self._recv_thread.join()

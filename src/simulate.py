@@ -3,13 +3,15 @@ import threading
 from smad import SMADProc, FileLogger
 
 processes = []
+threads = []
 
 
 def handler(signum, frame):
     for proc in processes:
         proc.kill()
-    print("Exiting")
-    exit()
+    # stop the threads
+    for thread in threads:
+        thread.join()
 
 
 signal.signal(signal.SIGINT, handler)
@@ -28,4 +30,6 @@ if __name__ == "__main__":
             f.write(f"{proc.process_name} {proc.clock_rate}\n")
 
     for proc in processes:
-        threading.Thread(target=proc.run).start()
+        thread = threading.Thread(target=proc.run)
+        threads.append(thread)
+        thread.start()
