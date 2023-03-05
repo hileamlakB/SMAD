@@ -32,7 +32,8 @@ def plot_log_files(log_files, output_file=None, show_plot=False):
     with open(log_files[0], 'r') as f:
         legend += f.read().split("\n")
     print(legend)
-    colors = ['blue', 'red', 'green', 'orange', 'purple', 'brown', 'pink']
+    colors = ['blue', 'red', 'green', 'orange',
+              'purple', 'brown', 'pink', "black"]
     fig, (ax1, ax2) = plt.subplots(nrows=2, ncols=1, figsize=(8, 10))
     ax1.set_title('Internal Clock vs. Actual Time (scatter)')
     ax2.set_title('Internal Clock vs. Actual Time (line)')

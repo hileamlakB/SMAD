@@ -29,13 +29,13 @@ To start a simulation, you can
 
 which will generate a log file containing events and internal clocks for each of the processes you created. You can interrupt the simulation with a `SIGINT`. To visualize this process you can run
 
-`python experiment\ results/visualize_results.py clock_rates.log [process_name.log] -o experiment\ results/standard_1.png`
+`python experiment_results/visualize_results.py clock_rates.log [process_name.log] -o experiment\ results/standard_1.png`
 
 Here make sure to include all the process logs, but no more as error handling isn't built it, this should give you a graph like the following,
 
-![results image](./experiment results/standard_1.png)
+![results image](./experiment_results/standard_1.png)
 
-After each test, make sure you run 
+After each test, make sure you run
 
 `./clean.sh`
 

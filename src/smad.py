@@ -66,7 +66,7 @@ class SMADProc:
         self.clock_rate = clock_rate  # randomly generate it
 
         self.other_procs: List[Tuple[str, int]] = []
-        self.logger: FileLogger = None
+        self.logger: FileLogger = logger
         self.logger_created = False
 
         # setup the processf
@@ -79,10 +79,14 @@ class SMADProc:
         A thread to receive messages while the main thread is busy
         """
         while not self._stop_thread.is_set():
-            conn, addr = self.serv_sock.accept()
-            data = conn.recv(1024)
-            json_msg = json.loads(data)
-            self._msg_queue.put((addr, json_msg))
+            try:
+                conn, addr = self.serv_sock.accept()
+                data = conn.recv(1024)
+                json_msg = json.loads(data)
+                self._msg_queue.put((addr, json_msg))
+            except:
+                pass
+                # the break is when the socket is closed
 
     def init_socket(self) -> None:
         """
@@ -112,7 +116,7 @@ class SMADProc:
         If clock rate is not provided, it will be randomly generated
         """
         if not self.clock_rate:
-            self.clock_rate = random.randint(1, 6)
+            self.clock_rate = 1
         self.sleep_time = 1 / self.clock_rate
         self.internal_clock = 0
 
@@ -178,7 +182,7 @@ class SMADProc:
                 continue
 
             # Decide what to do if there is no message in the queue
-            task = random.randint(1, 10)
+            task = random.randint(1, 20)
             msg = ""
             if task == Tasks.SEND_MACHINE_ONE.value:
                 self.send_msg(self.other_procs[0],
@@ -196,8 +200,8 @@ class SMADProc:
                 # sleep for point one second to simuulate internal event
                 time.sleep(.1)
                 msg = "INTERNAL EVENT"
-            
-            print(task, msg)
+
+            print(self.process_name, task, msg)
             self.internal_clock += 1
             self.log(self.log_formater(self.address, msg))
             time.sleep(self.sleep_time)
@@ -210,13 +214,12 @@ class SMADProc:
             closing log files
             closing threads
         """
-        # self.serv_sock.shutdown(socket.SHUT_RDWR)
-        # self.client_sock.shutdown(socket.SHUT_RDWR)
+        self.serv_sock.shutdown(socket.SHUT_RDWR)
+        self.serv_sock.close()
 
-        # self.serv_sock.close()
-        # self.client_sock.close()
-        # self._stop_thread.set()
-        # self._recv_thread.join()
+        self._stop_thread.set()
+        self._recv_thread.join()
 
         if self.logger_created:
+            print("closing logger")
             self.logger.close()
