@@ -19,7 +19,7 @@ You should then install the reqruiments. To do so, we suggest you create a virtu
 
 `python -m pip install -r requirements.txt`
 
-Now, you can run the test to make sure everything is working properly. If you are on a \*unix based system, you can run
+Now, you can run the test to make sure everything is working properly. If you are on a \*unix based system, you can run other wise you can do to manually using the python command below.
 
 `./run_test.sh`
 
@@ -29,7 +29,9 @@ To start a simulation, you can
 
 which will generate a log file containing events and internal clocks for each of the processes you created. You can interrupt the simulation with a `SIGINT`. To visualize this process you can run
 
-`python experiment_results/visualize_results.py clock_rates.log [process_name.log] -o experiment\ results/standard_1.png`
+`python experiment_results/visualize_results.py clock_rates.log [process_name.log] -o experiment\ results/standard_1.png -s`
+
+The s flag tells the program to visualize the result. And don't forget to replace `[process_name.log],`with all the process logs you have.
 
 Here make sure to include all the process logs, but no more as error handling isn't built it, this should give you a graph like the following,
 

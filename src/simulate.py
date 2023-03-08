@@ -15,14 +15,16 @@ def handler(signum, frame):
 
 
 signal.signal(signal.SIGINT, handler)
+start_port = 26582
+num_procs = 3
 
-address = [("localhost", i) for i in range(26263, 26271)]
+address = [("localhost", i) for i in range(start_port, start_port + num_procs)]
 
 if __name__ == "__main__":
 
     for i, (loc, port) in enumerate(address):
         proc = SMADProc(
-            name=f"large_standard{i}", location=loc, port=port)
+            name=f"proc{i}", location=loc, port=port)
         processes.append(proc)
         proc.add_proc(address[:i] + address[i + 1:])
         # store the clock rates in a file

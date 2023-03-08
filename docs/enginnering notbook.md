@@ -130,11 +130,25 @@ After implementing the the small scallable distirbuted system, here are some of 
 
    ![image](../experiment_results/large_numbers_large_internal_task_large_clock_2.png)
 
-**TODOS**:
-Give a three triangle relation between
-
-1. clock rate
-2. number
-3. Communication rate
-
 ## Experiment Conclusion
+
+Here are the genral conclusion we found
+
+- The process with the highest clock rates will have a higher internal clock and the usually have an average drift of 0
+- Even with a high clock rate, if a process has a low communication rate that is
+  - either the faster process don't send any message to it or
+  - the process is bussy with internal work
+
+It will have a huge drift, which we can see from the last graph.
+
+- Communication rate and and drift are inversly correlated to the individual processes, but my be directly related to the total drift of the system in such a setup as the above, as a high communication rate, which could result from a high number of processes or a realtively fast group of process which prevents the fastest process from responding, resulting in a drift between the fast process and the rest of the groups
+
+## Presentation
+
+```
+./clean.sh
+
+run_simulator: python src/simulate.py
+
+visualize images: python ./experiment_results/visualize_results.py clock_rates.log proc0.log proc1.log proc2.log -o tests.png -s
+```

@@ -9,6 +9,9 @@ import time
 from enum import Enum
 from typing import List, Tuple, Any
 
+MAX_CLOCK_RATE = 6
+MAX_TASK = 10
+
 
 class Tasks(Enum):
     SEND_MACHINE_ONE = 1
@@ -116,7 +119,7 @@ class SMADProc:
         If clock rate is not provided, it will be randomly generated
         """
         if not self.clock_rate:
-            self.clock_rate = 1
+            self.clock_rate = random.randint(1, MAX_CLOCK_RATE)
         self.sleep_time = 1 / self.clock_rate
         self.internal_clock = 0
 
@@ -136,7 +139,14 @@ class SMADProc:
         self.client_sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
         self.client_sock.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
 
-        self.client_sock.connect(dest)
+        # try to connect to the destination
+        # close the socket if it fails
+        try:
+            self.client_sock.connect(dest)
+        except:
+            self.client_sock.close()
+            return
+
         self.client_sock.send(msg.encode())
         self.client_sock.close()
 
@@ -167,7 +177,9 @@ class SMADProc:
         """
         Run: runs the process model as described in the class docstring
         """
+        self.run_complete = threading.Event()
         self.stop_main = threading.Event()
+
         while not self.stop_main.is_set():
 
             # check if there is a message in the queue
@@ -182,7 +194,7 @@ class SMADProc:
                 continue
 
             # Decide what to do if there is no message in the queue
-            task = random.randint(1, 20)
+            task = random.randint(1, MAX_TASK)
             msg = ""
             if task == Tasks.SEND_MACHINE_ONE.value:
                 self.send_msg(self.other_procs[0],
@@ -205,6 +217,7 @@ class SMADProc:
             self.internal_clock += 1
             self.log(self.log_formater(self.address, msg))
             time.sleep(self.sleep_time)
+        self.run_complete.set()
 
     def kill(self) -> None:
         """
@@ -217,6 +230,10 @@ class SMADProc:
         self.serv_sock.shutdown(socket.SHUT_RDWR)
         self.serv_sock.close()
         self.stop_main.set()
+
+        # wait for the run to complete
+        while not self.run_complete.is_set():
+            continue
 
         self._stop_thread.set()
         self._recv_thread.join()
